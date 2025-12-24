@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import LeadForm from "@/components/LeadForm";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyFilters from "@/components/PropertyFilters";
@@ -31,7 +32,9 @@ export default async function PropertiesPage({ searchParams }: Props) {
         </p>
       </div>
 
-      <PropertyFilters />
+      <Suspense fallback={<div className="card p-4">Loading filters...</div>}>
+        <PropertyFilters />
+      </Suspense>
 
       <div className="grid gap-6 md:grid-cols-3">
         {properties.length ? (

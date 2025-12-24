@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { Suspense, FormEvent, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function AdminReset() {
+function AdminResetForm() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -65,6 +65,20 @@ export default function AdminReset() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function AdminReset() {
+  return (
+    <Suspense fallback={
+      <div className="container py-16 flex justify-center">
+        <div className="card p-6 w-full max-w-md">
+          <p className="text-slate-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <AdminResetForm />
+    </Suspense>
   );
 }
 
