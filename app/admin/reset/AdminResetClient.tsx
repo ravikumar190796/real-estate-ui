@@ -1,14 +1,23 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { FormEvent, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function AdminResetClient() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const presetToken = searchParams.get("token") || "";
-  const [token, setToken] = useState(presetToken);
+  const [token, setToken] = useState("");
+  
+  // Read search params client-side only to avoid SSR/prerender issues
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tokenParam = params.get("token");
+      if (tokenParam) {
+        setToken(tokenParam);
+      }
+    }
+  }, []);
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
