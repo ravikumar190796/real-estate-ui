@@ -1,14 +1,21 @@
 "use client";
 
-import { Suspense, FormEvent, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { FormEvent, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-function AdminResetForm() {
+export default function AdminReset() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const presetToken = searchParams.get("token") || "";
-  const [token, setToken] = useState(presetToken);
+  const [token, setToken] = useState("");
+  
+  useEffect(() => {
+    // Read token from URL on client side only
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const presetToken = params.get("token") || "";
+      setToken(presetToken);
+    }
+  }, []);
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -65,20 +72,6 @@ function AdminResetForm() {
         </button>
       </form>
     </div>
-  );
-}
-
-export default function AdminReset() {
-  return (
-    <Suspense fallback={
-      <div className="container py-16 flex justify-center">
-        <div className="card p-6 w-full max-w-md">
-          <p className="text-slate-600">Loading...</p>
-        </div>
-      </div>
-    }>
-      <AdminResetForm />
-    </Suspense>
   );
 }
 
