@@ -1,26 +1,41 @@
-import { Suspense } from "react";
+"use client";
+
+import { useEffect, useState, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import LeadForm from "@/components/LeadForm";
-import PropertyCard from "@/components/PropertyCard";
+import PropertyCard, { Property } from "@/components/PropertyCard";
 import PropertyFilters from "@/components/PropertyFilters";
 import { fetchProperties } from "@/lib/api";
 
-type Props = {
-  searchParams: {
-    location?: string;
-    type?: string;
-    status?: string;
-    minPrice?: string;
-    maxPrice?: string;
-  };
-};
+function PropertiesPageContent() {
+  const searchParams = useSearchParams();
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export const metadata = {
-  title: "Properties | Skyline Estates",
-  description: "Browse curated apartments, villas, plots, and commercial assets.",
-};
+  const filters = useMemo(() => {
+    const params: Record<string, string> = {};
+    const location = searchParams.get("location");
+    const type = searchParams.get("type");
+    const status = searchParams.get("status");
+    const minPrice = searchParams.get("minPrice");
+    const maxPrice = searchParams.get("maxPrice");
 
-export default async function PropertiesPage({ searchParams }: Props) {
-  const properties = await fetchProperties(searchParams).catch(() => []);
+    if (location) params.location = location;
+    if (type) params.type = type;
+    if (status) params.status = status;
+    if (minPrice) params.minPrice = minPrice;
+    if (maxPrice) params.maxPrice = maxPrice;
+
+    return params;
+  }, [searchParams]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchProperties(filters)
+      .then(setProperties)
+      .catch(() => setProperties([]))
+      .finally(() => setLoading(false));
+  }, [filters]);
 
   return (
     <div className="container py-12 space-y-8">
@@ -32,12 +47,12 @@ export default async function PropertiesPage({ searchParams }: Props) {
         </p>
       </div>
 
-      <Suspense fallback={<div className="card p-4">Loading filters...</div>}>
-        <PropertyFilters />
-      </Suspense>
+      <PropertyFilters />
 
       <div className="grid gap-6 md:grid-cols-3">
-        {properties.length ? (
+        {loading ? (
+          <p className="text-slate-600">Loading properties...</p>
+        ) : properties.length ? (
           properties.map((property) => <PropertyCard key={property._id} property={property} />)
         ) : (
           <p className="text-slate-600">No properties match these filters. Try another search.</p>
@@ -59,6 +74,18 @@ export default async function PropertiesPage({ searchParams }: Props) {
         <LeadForm compact />
       </div>
     </div>
+  );
+}
+
+export default function PropertiesPage() {
+  return (
+    <Suspense fallback={
+      <div className="container py-12">
+        <p className="text-slate-600">Loading...</p>
+      </div>
+    }>
+      <PropertiesPageContent />
+    </Suspense>
   );
 }
 

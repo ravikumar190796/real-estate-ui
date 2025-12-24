@@ -1,13 +1,24 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import FeatureHighlights from "@/components/FeatureHighlights";
 import Hero from "@/components/Hero";
 import LeadForm from "@/components/LeadForm";
-import PropertyCard from "@/components/PropertyCard";
+import PropertyCard, { Property } from "@/components/PropertyCard";
 import StatsBar from "@/components/StatsBar";
 import Testimonials from "@/components/Testimonials";
 import { fetchProperties } from "@/lib/api";
 
-export default async function Home() {
-  const featured = await fetchProperties({ featured: "true" }).catch(() => []);
+export default function Home() {
+  const [featured, setFeatured] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProperties({ featured: "true" })
+      .then(setFeatured)
+      .catch(() => setFeatured([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <>
@@ -25,7 +36,9 @@ export default async function Home() {
           </a>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
-          {featured.length ? (
+          {loading ? (
+            <p className="text-slate-600">Loading featured properties...</p>
+          ) : featured.length ? (
             featured.map((property) => <PropertyCard key={property._id} property={property} />)
           ) : (
             <p className="text-slate-600">No featured properties yet. Check back soon.</p>
