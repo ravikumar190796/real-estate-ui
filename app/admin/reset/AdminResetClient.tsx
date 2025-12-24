@@ -1,21 +1,14 @@
 "use client";
 
-import { FormEvent, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function AdminResetClient() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const [token, setToken] = useState("");
-  
-  useEffect(() => {
-    // Read token from URL on client side only
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const presetToken = params.get("token") || "";
-      setToken(presetToken);
-    }
-  }, []);
+  const presetToken = searchParams.get("token") || "";
+  const [token, setToken] = useState(presetToken);
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -74,4 +67,3 @@ export default function AdminResetClient() {
     </div>
   );
 }
-
